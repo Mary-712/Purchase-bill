@@ -208,3 +208,9 @@ def loginurl(request):
 def profile(request):
  
   return render(request, 'profile.html')
+def purchase(request):
+ 
+  return render(request, 'purchasebill1.html')
+def add_purchase(request):
+ 
+  return render(request, 'add_purchase.html')
