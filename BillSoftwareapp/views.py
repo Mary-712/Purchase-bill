@@ -3,6 +3,9 @@ from django.contrib.auth.models import User, auth
 from . models import *
 from django.contrib import messages
 from django.utils.crypto import get_random_string
+from BillSoftwareapp .models import ItemModel,Parties,staff_details,company,FirstBill
+from django.http import JsonResponse
+from django.utils import timezone
 
 # Create your views here.
 
@@ -214,3 +217,41 @@ def purchase(request):
 def add_purchase(request):
  
   return render(request, 'add_purchase.html')
+def first_bill(request):
+ 
+  return render(request, 'first_bill.html')
+def first_page(request):
+    if request.method == 'POST':
+        # Handle form submission
+        customer_name = request.POST.get('cname', '')
+        customer, created = Parties.objects.get_or_create(party_name=customer_name)
+        
+        # Retrieve the next bill number
+        last_bill = FirstBill.objects.last()
+        if last_bill:
+            next_bill_number = last_bill.bill_number + 1
+        else:
+            next_bill_number = 1
+
+        # Create a new FirstBill instance
+        first_bill = FirstBill.objects.create(
+            customer=customer,
+            bill_number=next_bill_number,
+            bill_date=timezone.now().date(),
+            supply_source=request.POST.get('source', '')
+            # Add other fields as needed
+        )
+
+        # Redirect to a success page or return a response
+        return redirect('success_page')  # Adjust the URL or view name
+
+    # If it's a GET request, render the page with party details
+    party_names = Parties.objects.values_list('party_name', flat=True)
+    last_bill_number = FirstBill.objects.last().bill_number if FirstBill.objects.last() else 0
+
+    context = {
+        'party_names': party_names,
+        'last_bill_number': last_bill_number,
+        'current_date': timezone.now().date(),
+    }
+    return render(request, 'first_page.html', context)

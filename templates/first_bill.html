@@ -12,21 +12,9 @@
         <link href="static/assets/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
         <link href="static/css/style.css" rel="stylesheet">
         <script src="https://kit.fontawesome.com/fbe819dd43.js" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-
+    
     
     </head>
-    <style>
-        ul li a {
-            display: inline-block; /* Make the links and icons appear in a line */
-        }
-        
-        /* Style the "+" button as needed */
-        ul li a + a {
-            margin-left: 5px; /* Add space between the link and the plus button */
-            text-decoration: none; /* Remove underline from the plus button */
-        }
-    </style>
     
 <body>
      <!--*******************
@@ -134,14 +122,8 @@
             <ul aria-expanded="false">
                 <li><a href="./">Invoice</a></li>
                 <li><a href="./">Credit Note</a></li>
-                <li>
-        <a href="{% url 'purchase' %}">Purchase Bill</a>
-        <a href="{% url 'add_purchase' %}">
-            <i class="fa-sharp fa-solid fa-plus"></i>
-        </a>
-    </li>
-    <li><a href="{% url 'first_bill' %}">First Bill</a></li>  
-                              
+                <li><a href="{% url 'purchase' %}">Purchase Bill</a><a href="{% url 'add_purchase' %}"><i class="fa-sharp fa-solid fa-plus"></i></a></li>
+                <li><a href="{% url 'first_bill' %}">First Bill</a></li>             
             </ul>
         </li>
                 
@@ -189,49 +171,30 @@
 
 
 </div>
+<br><br>
 <div class="content-body">
+    
     <!-- row -->
     <div class="container-fluid">
+        
         <div class="row">
+            <br><br><br><br>
             <div class="col-md-12">
+                
                 <div class="card">
-                    <div class="stat-widget-two card-body">
-                        <div class="stat-content">
-                            <div class="stat-text">ADD PURCHASE BILL</div><br>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label>Customer</label>
-                                    <input type="text" name="cname" class="form-control" id="exampleDropdownFormEmail1" placeholder="Select" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Phone Number</label>
-                                    <input type="Number" name="cno" class="form-control" id="exampleDropdownFormEmail1" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Billing Address</label>
-                                    <textarea name="billingAddress" class="form-control" rows="3"></textarea>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label>Bill No</label>
-                                    <input type="Number" name="bno" class="form-control" id="exampleDropdownFormEmail1"  required>
-                                </div>
-                            </div><br>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label>Bill Date</label>
-                                    <input type="date" name="bdate" class="form-control" id="exampleDropdownFormEmail1" placeholder="mm\dd\yyyy" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Phone Number</label>
-                                    <input type="Number" name="cno" class="form-control" id="exampleDropdownFormEmail1" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label>Billing Address</label>
-                                    <textarea name="billingAddress" class="form-control" rows="3"></textarea>
-                                </div>
-                            </div>
+                    <br><br><br>
+                    <div class="stat-widget-two card-body" style="display: flex;">
+                        <div style="flex: 1; margin-right: 20px;">
+                            <!-- Add an image to the left side -->
+                            <img src="static/img/b1.jpg" alt="Your Image" style="max-width: 100%; height: 100%;">
+                        </div>
+
+                        <!-- Logo, content, and button on the right side -->
+                        <div style="flex: 1; overflow: hidden;">
+                            <img class="logo-abbr" src="static/img/logo/logo3.png" alt=""><br>
+                            <h3>BILLING SOFTWARE</h3>
+                            <h6>Welcome to Billing software. We are supporting to purchase an Item. <br>So first bill to registration. Please click the button.</h6><br>
+                            <a href="{% url 'first_page' %}"><button type='submit'>Click Here</button></a>
                         </div>
                     </div>
                 </div>
@@ -239,7 +202,6 @@
         </div>
     </div>
 </div>
-
 
 </body>
 
