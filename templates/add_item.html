@@ -200,36 +200,6 @@
 
 
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Get references to the relevant form elements
-        var cnameSelect = document.getElementById("cname");
-        var cnoInput = document.getElementById("cno");
-        var billingAddressTextarea = document.getElementById("billingAddress");
-        var balanceInput = document.getElementById("balance");
-
-        // Add an event listener to the customer select element
-        cnameSelect.addEventListener("change", function() {
-            // Get the selected option
-            var selectedOption = cnameSelect.options[cnameSelect.selectedIndex];
-
-            // Update the corresponding fields based on the selected option's data attributes
-            cnoInput.value = selectedOption.getAttribute("data-phone") || "";
-            billingAddressTextarea.value = selectedOption.getAttribute("data-address") || "";
-            balanceInput.value = selectedOption.getAttribute("data-balance") || "";
-        });
-    });
-</script>
-<!-- Add this script section at the end of your HTML body -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Get the current date in the format 'YYYY-MM-DD'
-        var currentDate = new Date().toISOString().split('T')[0];
-
-        // Set the default value for the 'bdate' input field to the current date
-        document.getElementById("bdate").value = currentDate;
-    });
-</script>
 
 
 <div class="content-body">
@@ -240,70 +210,61 @@
                 <div class="card">
                     <div class="stat-widget-two card-body">
                         <div class="stat-content">
-                            <h3 class="head" style="color: blue; font-weight: bold;">ADD PURCHASE BILL</h3><br>
+                            <h3 class="head" style="color: blue; font-weight: bold;">ADD NEW ITEM</h3><br>
                             <form method="post">
                                 {% csrf_token %}
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <label class="d-block text-left" for="cname">Customer </label>
+                                        <label class="d-block text-left" for="iname">Item</label>
                                         
-                                            <select name="cname" class="form-control" id="cname" required>
-                                                <option value="" disabled selected>Select a customer</option>
-                                                {% for party in party_names %}
-                                                    <option value="{{ party.party_name }}" data-phone="{{ party.phone_number }}" data-address="{{ party.billing_address }}" data-balance="{{ party.opening_balance }}">{{ party.party_name }}</option>
-                                                {% endfor %}
-                                            </select>
+                                        <input type="text" name="iname" class="form-control" id="iname" required>
+   
                                        
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="d-block text-left" for="cno">Phone Number</label>
-                                        <input type="number" name="cno" class="form-control" id="cno" required>
+                                        <label class="d-block text-left" for="cno">HSN</label>
+                                        <input type="number" name="ino" class="form-control" id="cno" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="d-block text-left" for="billingAddress">Billing Address</label>
-                                        <textarea name="billingAddress" class="form-control" id="billingAddress" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="bno">Bill No</label>
-                                        <input type="number" name="bno" class="form-control" id="bno" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="balance">Balance</label>
-                                        <input type="number" name="balance" class="form-control" id="balance" required>
+                                        <label class="d-block text-left" for="unit">Item Unit</label>
+                                        <input type="text" name="iunit" class="form-control" id="unit" required>
                                     </div>
                                 </div><br>
                                 <div class="row">
+                                    
                                     <div class="col-md-4">
-                                        <label class="d-block text-left" for="bdate">Bill Date</label>
+                                        <label class="d-block text-left" for="bno">Sales Price</label>
+                                        <input type="number" name="spurchase" class="form-control" id="cno" required>
+                                   
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="d-block text-left" for="bno">Purchase Price</label>
+                                        <input type="number" name="ppurchase" class="form-control" id="cno" required>
+                                   
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="d-block text-left" for="balance">Stock In Hand</label>
+                                        <input type="number" name="stock" class="form-control" id="balance" required>
+                                    </div>
+                                
+                            </div><br>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="d-block text-left" for="bno">Price</label>
+                                        <input type="number" name="price" class="form-control" id="cno" required>
+                                   
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="d-block text-left" for="bdate">Date</label>
                                         <input type="date" name="bdate" class="form-control" id="bdate" placeholder="mm\dd\yyyy" required>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="source">Supply Source</label>
-                                        <select name="source" class="form-control" id="source" required>
-                                            <option value="">-- Select --</option>
-                                            <option value="State">State</option>
-                                            <option value="Other State">Other State</option>
-                                            <!-- Add more options as needed -->
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="payment">Payment Method</label>
-                                        <select name="payment" class="form-control" id="payment" required>
-                                            <option value="">-- Select --</option>
-                                            <option value="Gpay">Gpay</option>
-                                            <option value="Net Banking">Net Banking</option>
-                                            <option value="Credit Card">Credit Card</option>
-                                            <option value="Debit Card">Debit Card</option>
-                                            <!-- Add more options as needed -->
-                                        </select>
-                                    </div>
-                                </div><br>
+                                    </div><br>
 
+                                   
                                     <div class="row">
-                                        
-                                           <button type="submit" style='text-align:center;margin-left:50%;padding:1%;background-color:bisque;color:red;font-size:bold;'>SUBMIT</button>
+                        
+                                           <button type="submit" style='text-align:center;margin-left:50%;padding:1%;width:10%;background-color:bisque;color:red;font-size:bold;'>ADD</button>
                                         </div>
                                     </div>
                                     
@@ -313,76 +274,7 @@
                     </div>
                 </div>
             </div>
-{% comment %} ------------------------------------------------------------------------------------------------- {% endcomment %}
-        <!-- HTML -->
-        <!-- Update the size of the input fields as needed -->
-        <div class="col-md-11 pt-2" style="margin-left:52px;">
-            <table class='table' id="itemTable">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Items   <a href="{% url 'add_item' %}"><button type="button" class="btn btn-primary btn-sm" >+</button></a></th>
-                        <th scope="col">HSN</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Tax%</th>
-                        <th scope="col">Discount</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Field</th>
-                    </tr>
-                </thead>
-                
-            </table>
-            <button type="button" class="btn btn-primary" onclick="addItemRow()">+</button>
-        </div>
         
-        <script>
-            function addItemRow() {
-                var index = $("#itemTable tbody tr").length + 1;
-        
-                var newRow = `<tr>
-                    <th scope="row">${index}</th>
-                    <td style="width: 200px;">
-                        <select name="item_name[]" class="form-control itemDropdown" onchange="handleItemDropdownChange($(this))">
-                            <option value="" disabled selected>Select an item</option>
-                        </select>
-                    </td>
-                    <td><input type="text" name="item_hsn[]" class="form-control"></td>
-                    <td><input type="number" name="quantity[]" class="form-control"></td>
-                    <td><input type="number" name="price[]" class="form-control"></td>
-                    <td><input type="number" name="tax[]" class="form-control"></td>
-                    <td><input type="number" name="discount[]" class="form-control"></td>
-                    <td><input type="number" name="amount[]" class="form-control"></td>
-                    <td><input type="text" name="field[]" class="form-control"></td>
-                </tr>`;
-        
-                var newElement = $(newRow);
-                $("#itemTable tbody").append(newElement);
-        
-                // Fetch items and update the dropdown for the new row
-                var itemDropdown = newElement.find(".itemDropdown");
-                fetchItemsAndUpdateDropdown(itemDropdown);
-            }
-        
-            function fetchItemsAndUpdateDropdown(dropdown) {
-                // Make an AJAX call to fetch items from the server
-                $.ajax({
-                    url: '/get_items/',  // Replace with your actual URL to fetch items
-                    method: 'GET',
-                    dataType: 'json',
-                    success: function (data) {
-                        // Update the dropdown options based on the fetched items
-                        dropdown.empty();
-                        dropdown.append('<option value="" disabled selected>Select an item</option>');
-                        $.each(data.items, function (key, value) {
-                            dropdown.append('<option value="' + value.id + '">' + value.item_name + '</option>');
-                        });
-                    },
-                    error: function (error) {
-                        console.log(error);
-                    }
-                });
-            }
         
         
        

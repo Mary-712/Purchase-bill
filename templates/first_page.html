@@ -1,3 +1,4 @@
+{% comment %}  Name: Mary C Wilson {% endcomment %}
 {% load static %}
 <!doctype html>
 <html class="no-js" lang="en">
@@ -197,77 +198,9 @@
 
 
 </div>
-<div class="content-body">
-    <!-- row -->
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="stat-widget-two card-body">
-                        <div class="stat-content">
-                            <h3 class="head" style="color: blue; font-weight: bold;">ADD PURCHASE BILL</h3><br>
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="cname">Customer</label>
-                                        <select name="cname" class="form-control" id="cname" required>
-                                            <option value="" disabled selected>Select a customer</option>
-                                            {% for party_name in party_names %}
-                                                <option value="{{ party_name }}">{{ party_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="cno">Phone Number</label>
-                                        <input type="number" name="cno" class="form-control" id="cno" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="billingAddress">Billing Address</label>
-                                        <textarea name="billingAddress" class="form-control" id="billingAddress" rows="3"></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="bno">Bill No</label>
-                                        <input type="number" name="bno" class="form-control" id="bno" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="balance">Balance</label>
-                                        <input type="number" name="balance" class="form-control" id="balance" required>
-                                    </div>
-                                </div><br>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="bdate">Bill Date</label>
-                                        <input type="date" name="bdate" class="form-control" id="bdate" placeholder="mm\dd\yyyy" required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="d-block text-left" for="source">Supply Source</label>
-                                        <select name="source" class="form-control" id="source" required>
-                                            <option value="">-- Select --</option>
-                                            <option value="State">State</option>
-                                            <option value="Other State">Other State</option>
-                                            <!-- Add more options as needed -->
-                                        </select>
-                                    </div>
-                                </div><br>
 
-                                    <div class="row">
-                                        
-                                           <button type="submit" style='text-align:center;margin-left:50%;padding:1%;background-color:green;color:red;font-size:bold;'>SUBMIT</button>
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+
 
 
 </body>

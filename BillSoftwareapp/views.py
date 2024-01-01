@@ -1,3 +1,5 @@
+# Name: Mary C Wilson
+
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User, auth
 from . models import *
@@ -6,7 +8,7 @@ from django.utils.crypto import get_random_string
 from BillSoftwareapp .models import ItemModel,Parties,staff_details,company,FirstBill
 from django.http import JsonResponse
 from django.utils import timezone
-
+from django.http import HttpResponse
 # Create your views here.
 
 def home(request):
@@ -212,46 +214,190 @@ def profile(request):
  
   return render(request, 'profile.html')
 def purchase(request):
- 
-  return render(request, 'purchasebill1.html')
-def add_purchase(request):
- 
-  return render(request, 'add_purchase.html')
-def first_bill(request):
- 
-  return render(request, 'first_bill.html')
-def first_page(request):
     if request.method == 'POST':
-        # Handle form submission
-        customer_name = request.POST.get('cname', '')
-        customer, created = Parties.objects.get_or_create(party_name=customer_name)
-        
-        # Retrieve the next bill number
-        last_bill = FirstBill.objects.last()
-        if last_bill:
-            next_bill_number = last_bill.bill_number + 1
-        else:
-            next_bill_number = 1
+        customer_name = request.POST.get('cname')
+        phone_number = request.POST.get('cno')
+        billing_address = request.POST.get('billingAddress')
+        bill_number = request.POST.get('bno')
+        balance = request.POST.get('balance')
+        bill_date = request.POST.get('bdate', timezone.now().strftime('%Y-%m-%d'))
+        supply_source = request.POST.get('source')
 
-        # Create a new FirstBill instance
-        first_bill = FirstBill.objects.create(
-            customer=customer,
-            bill_number=next_bill_number,
-            bill_date=timezone.now().date(),
-            supply_source=request.POST.get('source', '')
-            # Add other fields as needed
-        )
+        # Get the staff_id from the session
+        staff_id = request.session.get('staff_id')
 
-        # Redirect to a success page or return a response
-        return redirect('success_page')  # Adjust the URL or view name
+        try:
+            staff = staff_details.objects.get(id=staff_id)
+            company_id = staff.company_id
+            party_names = Parties.objects.filter(company_id=company_id)
+            customer = Parties.objects.get(party_name=customer_name)
 
-    # If it's a GET request, render the page with party details
-    party_names = Parties.objects.values_list('party_name', flat=True)
-    last_bill_number = FirstBill.objects.last().bill_number if FirstBill.objects.last() else 0
+            
+            new_bill = FirstBill(
+                customer=customer,
+                bill_number=bill_number,
+                bill_date=bill_date,
+                supply_source=supply_source
+            )
+            new_bill.save()
 
-    context = {
-        'party_names': party_names,
-        'last_bill_number': last_bill_number,
-        'current_date': timezone.now().date(),
-    }
-    return render(request, 'first_page.html', context)
+           
+            customer.phone_number = phone_number
+            customer.billing_address = billing_address
+            customer.opening_balance = balance
+            customer.save()
+
+            return render(request, 'purchasebill1.html', {'party_names': party_names})
+
+        except staff_details.DoesNotExist:
+          
+            return redirect('login')
+
+   
+    staff_id = request.session.get('staff_id')
+    company_id = staff_details.objects.get(id=staff_id).company_id
+    party_names = Parties.objects.filter(company_id=company_id)
+    return render(request, 'purchasebill1.html', {'party_names': party_names})
+ 
+
+
+def first_page(request):
+ 
+  return redirect('homepage')
+
+def first_bill(request):
+     if request.method == 'POST':
+        customer_name = request.POST.get('cname')
+        phone_number = request.POST.get('cno')
+        billing_address = request.POST.get('billingAddress')
+        bill_number = request.POST.get('bno')
+        balance = request.POST.get('balance')
+        bill_date = request.POST.get('bdate', timezone.now().strftime('%Y-%m-%d'))
+        supply_source = request.POST.get('source')
+
+       
+        staff_id = request.session.get('staff_id')
+
+        try:
+            
+            staff = staff_details.objects.get(id=staff_id)
+            company_id = staff.company_id
+            party_names = Parties.objects.filter(company_id=company_id)     
+            customer = Parties.objects.get(party_name=customer_name)
+
+           
+            new_bill = FirstBill(
+                customer=customer,
+                bill_number=bill_number,
+                bill_date=bill_date,
+                supply_source=supply_source
+            )
+            new_bill.save()
+
+            
+            customer.phone_number = phone_number
+            customer.billing_address = billing_address
+            customer.opening_balance = balance
+            customer.save()
+
+            return render(request, 'first_bill.html', {'party_names': party_names})
+
+        except staff_details.DoesNotExist:
+            
+            return redirect('login')
+
+   
+     staff_id = request.session.get('staff_id')
+     company_id = staff_details.objects.get(id=staff_id).company_id
+     party_names = Parties.objects.filter(company_id=company_id)
+     return render(request, 'first_bill.html', {'party_names': party_names})
+def add_purchase(request):
+   
+    if request.method == 'POST':
+        customer_name = request.POST.get('cname')
+        phone_number = request.POST.get('cno')
+        billing_address = request.POST.get('billingAddress')
+        bill_number = request.POST.get('bno')
+        balance = request.POST.get('balance')
+        bill_date = request.POST.get('bdate', timezone.now().strftime('%Y-%m-%d'))
+        supply_source = request.POST.get('source')
+
+        # Get the staff_id from the session
+        staff_id = request.session.get('staff_id')
+
+        try:
+            staff = staff_details.objects.get(id=staff_id)
+            company_id = staff.company_id
+            party_names = Parties.objects.filter(company_id=company_id)
+            customer = Parties.objects.get(party_name=customer_name)
+
+            
+            new_bill = FirstBill(
+                customer=customer,
+                bill_number=bill_number,
+                bill_date=bill_date,
+                supply_source=supply_source
+            )
+            new_bill.save()
+
+           
+            customer.phone_number = phone_number
+            customer.billing_address = billing_address
+            customer.opening_balance = balance
+            customer.save()
+
+            return render(request, 'add_purchase.html', {'party_names': party_names})
+
+        except staff_details.DoesNotExist:
+          
+            return redirect('login')
+
+   
+    staff_id = request.session.get('staff_id')
+    company_id = staff_details.objects.get(id=staff_id).company_id
+    party_names = Parties.objects.filter(company_id=company_id)
+    return render(request, 'add_purchase.html', {'party_names': party_names})
+def add_purchase_bill(request):
+    if request.method == 'POST':
+        item_names = request.POST.getlist('item_name[]')
+        item_hsns = request.POST.getlist('item_hsn[]')
+        quantities = request.POST.getlist('quantity[]')
+        prices = request.POST.getlist('price[]')
+        taxes = request.POST.getlist('tax[]')
+        discounts = request.POST.getlist('discount[]')
+        amounts = request.POST.getlist('amount[]')
+        fields = request.POST.getlist('field[]')
+
+        # Assuming you have a staff_id in the session
+        staff_id = request.session.get('staff_id')
+
+        # Assuming you have a company_id associated with the staff
+        try:
+            staff = staff_details.objects.get(id=staff_id)
+            company_id = staff.company_id
+        except staff_details.DoesNotExist:
+            return redirect('login')
+
+        # Loop through the submitted data and create ItemModel instances
+        for i in range(len(item_names)):
+            item = ItemModel(
+                staff_id=staff_id,
+                company_id=company_id,
+                item_name=item_names[i],
+                item_hsn=item_hsns[i],
+                quantity=quantities[i],
+                price=prices[i],
+                tax=taxes[i],
+                discount=discounts[i],
+                amount=amounts[i],
+                field=fields[i],
+            )
+            item.save()
+
+        return HttpResponse("Data saved successfully!")
+
+    return render(request, 'add_purchase.html')
+
+def add_item(request):
+  return render(request, 'add_item.html')
+  

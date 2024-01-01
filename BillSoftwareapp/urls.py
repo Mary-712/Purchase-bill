@@ -27,5 +27,7 @@ urlpatterns = [
     path('add_purchase', views.add_purchase, name='add_purchase'),
     path('first_bill',views.first_bill,name='first_bill'),
     path('first_page',views.first_page,name='first_page'),
-
+    path('add_purchase_bill',views.add_purchase_bill,name='add_purchase_bill'),
+    path('add_item', views.add_item, name='add_item'),
+  
 ]
