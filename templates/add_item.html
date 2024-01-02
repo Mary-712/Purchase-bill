@@ -202,18 +202,41 @@
 </div>
 
 
+<!-- Your main HTML file -->
+
+<table class='table' id="itemTable">
+    <!-- ... Your table content ... -->
+</table>
+
 <div class="content-body">
-    <!-- row -->
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="stat-widget-two card-body">
                         <div class="stat-content">
-                            <h3 class="head" style="color: blue; font-weight: bold;">ADD NEW ITEM</h3><br>
-                            <form method="post">
+                            <form method="post" >
                                 {% csrf_token %}
-                                <div class="row">
+                                <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Add Item</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% include 'add_item_modal_content.html' %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </div>
+                                   
+
+                                {% comment %} <div class="row">
                                     <div class="col-md-4">
                                         <label class="d-block text-left" for="iname">Item</label>
                                         
@@ -265,7 +288,7 @@
                                     <div class="row">
                         
                                            <button type="submit" style='text-align:center;margin-left:50%;padding:1%;width:10%;background-color:bisque;color:red;font-size:bold;'>ADD</button>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     
                                 </div>

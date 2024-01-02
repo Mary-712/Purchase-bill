@@ -9,6 +9,7 @@ from BillSoftwareapp .models import ItemModel,Parties,staff_details,company,Firs
 from django.http import JsonResponse
 from django.utils import timezone
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 # Create your views here.
 
 def home(request):
@@ -357,47 +358,21 @@ def add_purchase(request):
     company_id = staff_details.objects.get(id=staff_id).company_id
     party_names = Parties.objects.filter(company_id=company_id)
     return render(request, 'add_purchase.html', {'party_names': party_names})
-def add_purchase_bill(request):
-    if request.method == 'POST':
-        item_names = request.POST.getlist('item_name[]')
-        item_hsns = request.POST.getlist('item_hsn[]')
-        quantities = request.POST.getlist('quantity[]')
-        prices = request.POST.getlist('price[]')
-        taxes = request.POST.getlist('tax[]')
-        discounts = request.POST.getlist('discount[]')
-        amounts = request.POST.getlist('amount[]')
-        fields = request.POST.getlist('field[]')
-
-        # Assuming you have a staff_id in the session
-        staff_id = request.session.get('staff_id')
-
-        # Assuming you have a company_id associated with the staff
-        try:
-            staff = staff_details.objects.get(id=staff_id)
-            company_id = staff.company_id
-        except staff_details.DoesNotExist:
-            return redirect('login')
-
-        # Loop through the submitted data and create ItemModel instances
-        for i in range(len(item_names)):
-            item = ItemModel(
-                staff_id=staff_id,
-                company_id=company_id,
-                item_name=item_names[i],
-                item_hsn=item_hsns[i],
-                quantity=quantities[i],
-                price=prices[i],
-                tax=taxes[i],
-                discount=discounts[i],
-                amount=amounts[i],
-                field=fields[i],
-            )
-            item.save()
-
-        return HttpResponse("Data saved successfully!")
-
-    return render(request, 'add_purchase.html')
-
-def add_item(request):
-  return render(request, 'add_item.html')
   
+def get_items(request):
+    # Replace this with your actual logic to fetch items
+    items = ItemModel.objects.all()
+    item_list = [{'id': item.id, 'item_name': item.item_name} for item in items]
+    return JsonResponse({'items': item_list})
+  
+def get_item_details(request, item_id):
+    item = ItemModel.objects.get(id=item_id)
+    item_details = {
+        'hsn': item.item_hsn,
+        'price': item.item_purchase_price,
+        'tax_percent': item.item_gst if item.item_taxable == 'GST' else item.item_igst,
+    }
+    return JsonResponse(item_details)
+
+def your_view_function(request):
+    return render(request, 'purchasebill1.html')

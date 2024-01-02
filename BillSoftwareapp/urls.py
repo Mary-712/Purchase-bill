@@ -27,7 +27,12 @@ urlpatterns = [
     path('add_purchase', views.add_purchase, name='add_purchase'),
     path('first_bill',views.first_bill,name='first_bill'),
     path('first_page',views.first_page,name='first_page'),
-    path('add_purchase_bill',views.add_purchase_bill,name='add_purchase_bill'),
-    path('add_item', views.add_item, name='add_item'),
+    path('get_item_details/<int:item_id>', views.get_item_details, name='get_item_details'),
+    # path('add_purchase_bill',views.add_purchase_bill,name='add_purchase_bill'),
+    # path('add_item', views.add_item, name='add_item'),
+    path('get_items/', views.get_items, name='get_items'),
+    path('get_item_details/<int:item_id>/', views.get_item_details, name='get_item_details'),
+    path('your_view_path/', views.your_view_function, name='your_view_function'),
+
   
 ]
