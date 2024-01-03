@@ -15,6 +15,13 @@
         <link href="static/css/style.css" rel="stylesheet">
         <script src="https://kit.fontawesome.com/fbe819dd43.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <script src="path/to/jquery.min.js"></script>
+        <script src="path/to/bootstrap.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="/static/path/to/jquery.min.js"></script>
+        <script src="/static/path/to/bootstrap.min.js"></script>
+        <script src="{% static 'path/to/jquery.min.js' %}"></script>
+        <script src="{% static 'path/to/bootstrap.min.js' %}"></script>
 
     
     </head>
@@ -239,6 +246,41 @@
         document.getElementById("bdate").value = currentDate;
     });
 </script>
+function handleItemDropdownChange(dropdown) {
+    var selectedItemId = dropdown.val();
+    var hsnInput = dropdown.closest('tr').find('.hsnInput');
+    var priceInput = dropdown.closest('tr').find('.priceInput');
+    var taxInput = dropdown.closest('tr').find('.taxInput');
+
+    // Get the selected customer's state
+    var customerState = $('#cname option:selected').data('state');
+
+    // Make an AJAX call to fetch item details by ID
+    $.ajax({
+        url: '/get_item_details/' + selectedItemId + '/',
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            // Update HSN, Price, and Tax% inputs
+            hsnInput.val(data.hsn);
+            priceInput.val(data.price);
+
+            // Determine the tax rate based on supply source and customer state
+            var taxRate = (data.supply_source === customerState) ? data.gst_tax : data.igst_tax;
+            
+            taxInput.val(taxRate);
+
+            // Trigger input events to recalculate amount
+            hsnInput.trigger('input');
+            priceInput.trigger('input');
+            taxInput.trigger('input');
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+</script>
 
 
 <div class="content-body">
@@ -259,7 +301,7 @@
                                             <select name="cname" class="form-control" id="cname" required>
                                                 <option value="" disabled selected>Select a customer</option>
                                                 {% for party in party_names %}
-                                                    <option value="{{ party.party_name }}" data-phone="{{ party.phone_number }}" data-address="{{ party.billing_address }}" data-balance="{{ party.opening_balance }}">{{ party.party_name }}</option>
+                                                    <option value="{{ party.party_name }}" data-phone="{{ party.phone_number }}" data-address="{{ party.billing_address }}" data-state="{{ party.state }}" data-balance="{{ party.opening_balance }}">{{ party.party_name }}</option>
                                                 {% endfor %}
                                             </select>
                                             <button type="button" class="btn btn-primary ml-2" onclick="">+</button>
@@ -315,10 +357,7 @@
                                     </div>
                                 </div><br>
 
-                                    <div class="row">
-                                        
-                                           <button type="submit" style='text-align:center;margin-left:50%;padding:1%;background-color:bisque;color:red;font-size:bold;'>SUBMIT</button>
-                                        </div>
+                                   
                                     </div>
                                     
                                 </div>
@@ -327,15 +366,17 @@
                     </div>
                 </div>
             </div>
+            
 {% comment %} ------------------------------------------------------------------------------------------------- {% endcomment %}
         <!-- HTML -->
         <!-- Update the size of the input fields as needed -->
-        <div class="col-md-11 pt-2" style="margin-left:52px;">
+        <div class="col-md-12 " style="margin-left:12px;">
+            
             <table class='table' id="itemTable">
                 <thead class="thead-dark">
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Items</th>
+                        <th style="width: 20px;" scope="col">#</th>
+                        <th style="width: 200px;" scope="col">Items</th>
                         <th scope="col">HSN</th>
                         <th scope="col">Quantity</th>
                         <th scope="col">Price</th>
@@ -346,57 +387,38 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td style="width: 200px; border:1px solid blak;">
-                            <div style="display: flex; align-items: center;">
-                                <select name="item_name[]" class="form-control" onchange="handleItemDropdownChange($(this))">
-                                    <option value="" disabled selected>Select an item</option>
-                                    <!-- Dynamically populated options will go here -->
-                                </select>
-                                <button  class="btn btn-primary ml-2" type="button">+</button>
-                            </div>
-                        </td>
-                        <td style="border:black;"><input type="text" name="item_hsn[]" class="form-control "></td>
-                        <td><input type="number" name="quantity[]" class="form-control " oninput="calculateAmount($(this))"></td>
-                        <td><input type="number" name="price[]" class="form-control"></td>
-                        <td><input type="number" name="tax[]" class="form-control " readonly></td>
-                        <td><input type="number" name="discount[]" class="form-control " oninput="calculateAmount($(this))"></td>
-                        <td><input type="number" name="amount[]" class="form-control " readonly></td>
-                        <td><input type="text" name="field[]" class="form-control"></td>
-                 
-                    </tr>
+                    
                 </tbody>
                 
             </table>
             <button type="button" class="btn btn-primary" onclick="addItemRow()">+</button>
-        </div>
+       
+        </div><br><br>
         
-        <script src="path/to/jquery.min.js"></script>
-        <script src="path/to/bootstrap.min.js"></script>
-        
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
         <script>
             function addItemRow() {
                 var index = $("#itemTable tbody tr").length + 1;
         
                 var newRow = `<tr>
-                    <th style="color:black;" scope="row">${index}</th>
+                    <th style="color:black; style="width: 10px;"" scope="row">${index}</th>
                     <td style="width: 200px;">
                         <div style="display: flex; align-items: center;">
-                            <select name="item_name[]" class="form-control" onchange="handleItemDropdownChange($(this))">
+                            <select name="item_name[]" class="form-control itemDropdown" onchange="handleItemDropdownChange($(this))">
                                 <option value="" disabled selected>Select an item</option>
                                 <!-- Dynamically populated options will go here -->
                             </select>
-                              <button class="btn btn-primary ml-2" type="button">+</button>
+                            <button class="btn btn-primary ml-2" type="button" onclick="addItemRow()">+</button>
                         </div>
                     </td>
-                    <td><input type="text" name="item_hsn[]" class="form-control hsnInput"></td>
-                    <td><input type="number" name="quantity[]" class="form-control quantityInput" oninput="calculateAmount($(this))"></td>
-                    <td><input type="number" name="price[]" class="form-control priceInput"></td>
-                    <td><input type="number" name="tax[]" class="form-control taxInput" readonly></td>
-                    <td><input type="number" name="discount[]" class="form-control discountInput" oninput="calculateAmount($(this))"></td>
-                    <td><input type="number" name="amount[]" class="form-control amountInput" readonly></td>
-                    <td><input type="text" name="field[]" class="form-control"></td>
+                    <td style="width: 90px;"><input type="text" name="item_hsn[]" class="form-control hsnInput"></td>
+                    <td style="width: 50px;"><input type="number" name="quantity[]" class="form-control quantityInput" oninput="calculateAmount($(this))"></td>
+                    <td style="width: 100px;"><input type="number" name="price[]" class="form-control priceInput"></td>
+                    <td style="width: 100px;"><input type="number" name="tax[]" class="form-control taxInput" readonly></td>
+                    <td style="width: 100px;"><input type="number" name="discount[]" class="form-control discountInput" oninput="calculateAmount($(this))"></td>
+                    <td style="width: 130px;"><input type="number" name="amount[]" class="form-control amountInput" readonly></td>
+                    <td style="width: 90px;"><input type="text" name="field[]" class="form-control"></td>
                 </tr>`;
         
                 var newElement = $(newRow);
@@ -407,14 +429,16 @@
                 fetchItemsAndUpdateDropdown(itemDropdown);
             }
         
+            $(document).ready(function () {
+                addItemRow(); // Add the first row on page load
+            });
+        
             function fetchItemsAndUpdateDropdown(dropdown) {
-                // Replace the placeholder URL with your actual URL to fetch items
                 $.ajax({
-                    url: '/get_items/',
+                    url: '/get_items/', // Update the URL accordingly
                     method: 'GET',
                     dataType: 'json',
                     success: function (data) {
-                        // Update the dropdown options based on the fetched items
                         dropdown.empty();
                         dropdown.append('<option value="" disabled selected>Select an item</option>');
                         $.each(data.items, function (key, value) {
@@ -426,12 +450,15 @@
                     }
                 });
             }
-        
+            
             function handleItemDropdownChange(dropdown) {
                 var selectedItemId = dropdown.val();
                 var hsnInput = dropdown.closest('tr').find('.hsnInput');
                 var priceInput = dropdown.closest('tr').find('.priceInput');
                 var taxInput = dropdown.closest('tr').find('.taxInput');
+            
+                // Get the selected customer's state
+                var customerState = $('#cname option:selected').data('state');
             
                 // Make an AJAX call to fetch item details by ID
                 $.ajax({
@@ -442,7 +469,26 @@
                         // Update HSN, Price, and Tax% inputs
                         hsnInput.val(data.hsn);
                         priceInput.val(data.price);
-                        taxInput.val(data.tax_percent);
+            
+                        // Determine taxable status and tax rate
+                        var isTaxable = data.is_taxable === 'True';
+            
+                        // Default tax rate
+                        var taxRate = 0;
+            
+                        // Check if the item is taxable
+                        if (isTaxable) {
+                            // Determine the tax rate based on supply source and customer state
+                            if (data.state_of_supply === customerState) {
+                                // Supply source state matches customer state, use GST tax rate
+                                taxRate = data.item_gst;
+                            } else {
+                                // Supply source state is different, use IGST tax rate
+                                taxRate = data.item_igst;
+                            }
+                        }
+            
+                        taxInput.val(taxRate);
             
                         // Trigger input events to recalculate amount
                         hsnInput.trigger('input');
@@ -454,6 +500,7 @@
                     }
                 });
             }
+            
             
             function calculateAmount(input) {
                 var quantity = input.closest('tr').find('.quantityInput').val() || 0;
@@ -471,7 +518,44 @@
                 input.closest('tr').find('.amountInput').val(amount.toFixed(2));
             }
         </script>
+        
+
+{% comment %} ----------------------------------------------------------------------------------------------- {% endcomment %}
        
+
+<div class="container-fluid" >
+    <div class="row" >
+        <div class="col-md-4" >
+            <div class="card"style="background-color:rgb(57, 193, 247); margin-top:15px;">
+                <div class="form-group">
+                    <label style="margin-left:35px; margin-top:50px;">Sub Total :</label>
+                    <input type="number" name="sub" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">CGST :</label>
+                    <input type="number" name="cgst" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">SGST :</label>
+                    <input type="number" name="sgst" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">Tax Amount :</label>
+                    <input type="number" name="amount" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">Adjustment :</label>
+                    <input type="number" name="adjustment" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">Paid Off :</label>
+                    <input type="number" name="paid" style="width: 150px;" required><br>
+
+                    <label style="margin-left:35px; margin-top:20px;">Balance :</label>
+                    <input type="number" name="balance" style="width: 150px;" required><br>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 
 </html>

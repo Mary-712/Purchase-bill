@@ -360,19 +360,82 @@ def add_purchase(request):
     return render(request, 'add_purchase.html', {'party_names': party_names})
   
 def get_items(request):
-    # Replace this with your actual logic to fetch items
-    items = ItemModel.objects.all()
+    # Replace 'company_id' and 'staff_id' with your actual model fields
+    company_id = request.GET.get('company_id')
+    staff_id = request.GET.get('staff_id')
+
+    # Modify the filtering logic based on your actual model fields
+    if company_id:
+        items = ItemModel.objects.filter(company_id=company_id)
+    elif staff_id:
+        items = ItemModel.objects.filter(staff_id=staff_id)
+    else:
+        items = ItemModel.objects.all()
+
     item_list = [{'id': item.id, 'item_name': item.item_name} for item in items]
     return JsonResponse({'items': item_list})
-  
+
 def get_item_details(request, item_id):
-    item = ItemModel.objects.get(id=item_id)
-    item_details = {
-        'hsn': item.item_hsn,
-        'price': item.item_purchase_price,
-        'tax_percent': item.item_gst if item.item_taxable == 'GST' else item.item_igst,
+    try:
+        item = ItemModel.objects.get(id=item_id)
+
+        # Get the customer's state from the supply_source field
+        customer_state = request.POST.get('source')  # Assuming 'source' is the field containing the state
+
+        tax_rate = get_tax_rate(customer_state, item)
+
+        item_details = {
+            'hsn': item.item_hsn,
+            'price': item.item_purchase_price,
+            'tax_percent': tax_rate,
+        }
+        return JsonResponse(item_details)
+    except ItemModel.DoesNotExist:
+        return JsonResponse({'error': 'Item not found'}, status=404)
+
+def get_tax_rate(customer_state, item):
+    # Implement the logic to determine tax rate based on customer's state and item's taxability
+    # For example, you can have a dictionary mapping states to tax rates
+    state_tax_rates = {
+        'State1': 5,
+        'State2': 8,
+        # Add more states and tax rates as needed
     }
-    return JsonResponse(item_details)
+
+    default_tax_rate = 0  # Default tax rate if state not found in the dictionary
+
+    # Replace 'StateX' with the actual state field in your ItemModel
+    item_taxable = item.item_taxable
+
+    # If item is taxable and the customer's state is in the dictionary, use that tax rate
+    if item_taxable and customer_state in state_tax_rates:
+        return state_tax_rates[customer_state]
+
+    # Otherwise, return the default tax rate
+    return default_tax_rate
 
 def your_view_function(request):
     return render(request, 'purchasebill1.html')
+
+def view_items(request):
+    items = ItemModel.objects.all()
+    return render(request, 'view_items.html', {'items': items})
+
+def view_item_details(request, item_id):
+    item = get_object_or_404(ItemModel, id=item_id)
+    return render(request, 'view_item_details.html', {'item': item})
+
+def edit_item(request, item_id):
+    if request.method == 'POST':
+        item = get_object_or_404(ItemModel, id=item_id)
+        item.item_name = request.POST.get('item_name')
+        item.item_hsn = request.POST.get('item_hsn')
+        item.item_purchase_price = request.POST.get('item_purchase_price')
+        item.item_gst = request.POST.get('item_gst')
+        item.item_igst = request.POST.get('item_igst')
+        # Update other fields as needed
+        item.save()
+        return redirect('view_items')  # Redirect to the view_items page after editing
+    else:
+        item = get_object_or_404(ItemModel, id=item_id)
+        return render(request, 'edit_item.html', {'item': item})

@@ -33,6 +33,8 @@ urlpatterns = [
     path('get_items/', views.get_items, name='get_items'),
     path('get_item_details/<int:item_id>/', views.get_item_details, name='get_item_details'),
     path('your_view_path/', views.your_view_function, name='your_view_function'),
-
+    path('items/', views.view_items, name='view_items'),
+    path('items/<int:item_id>/', views.view_item_details, name='view_item_details'),
+    path('items/<int:item_id>/edit/', views.edit_item, name='edit_item'),
   
 ]
