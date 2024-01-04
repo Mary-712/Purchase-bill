@@ -246,41 +246,6 @@
         document.getElementById("bdate").value = currentDate;
     });
 </script>
-function handleItemDropdownChange(dropdown) {
-    var selectedItemId = dropdown.val();
-    var hsnInput = dropdown.closest('tr').find('.hsnInput');
-    var priceInput = dropdown.closest('tr').find('.priceInput');
-    var taxInput = dropdown.closest('tr').find('.taxInput');
-
-    // Get the selected customer's state
-    var customerState = $('#cname option:selected').data('state');
-
-    // Make an AJAX call to fetch item details by ID
-    $.ajax({
-        url: '/get_item_details/' + selectedItemId + '/',
-        method: 'GET',
-        dataType: 'json',
-        success: function (data) {
-            // Update HSN, Price, and Tax% inputs
-            hsnInput.val(data.hsn);
-            priceInput.val(data.price);
-
-            // Determine the tax rate based on supply source and customer state
-            var taxRate = (data.supply_source === customerState) ? data.gst_tax : data.igst_tax;
-            
-            taxInput.val(taxRate);
-
-            // Trigger input events to recalculate amount
-            hsnInput.trigger('input');
-            priceInput.trigger('input');
-            taxInput.trigger('input');
-        },
-        error: function (error) {
-            console.log(error);
-        }
-    });
-}
-</script>
 
 
 <div class="content-body">
@@ -409,8 +374,10 @@ function handleItemDropdownChange(dropdown) {
                                 <option value="" disabled selected>Select an item</option>
                                 <!-- Dynamically populated options will go here -->
                             </select>
-                            <button class="btn btn-primary ml-2" type="button" onclick="addItemRow()">+</button>
-                        </div>
+                            <button style="margin-left:5px;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                                +
+                            </button>
+                       
                     </td>
                     <td style="width: 90px;"><input type="text" name="item_hsn[]" class="form-control hsnInput"></td>
                     <td style="width: 50px;"><input type="number" name="quantity[]" class="form-control quantityInput" oninput="calculateAmount($(this))"></td>
@@ -450,12 +417,12 @@ function handleItemDropdownChange(dropdown) {
                     }
                 });
             }
-            
             function handleItemDropdownChange(dropdown) {
                 var selectedItemId = dropdown.val();
-                var hsnInput = dropdown.closest('tr').find('.hsnInput');
-                var priceInput = dropdown.closest('tr').find('.priceInput');
-                var taxInput = dropdown.closest('tr').find('.taxInput');
+                var row = dropdown.closest('tr');
+                var hsnInput = row.find('.hsnInput');
+                var priceInput = row.find('.priceInput');
+                var taxInput = row.find('.taxInput');
             
                 // Get the selected customer's state
                 var customerState = $('#cname option:selected').data('state');
@@ -470,56 +437,276 @@ function handleItemDropdownChange(dropdown) {
                         hsnInput.val(data.hsn);
                         priceInput.val(data.price);
             
-                        // Determine taxable status and tax rate
-                        var isTaxable = data.is_taxable === 'True';
-            
-                        // Default tax rate
-                        var taxRate = 0;
-            
-                        // Check if the item is taxable
-                        if (isTaxable) {
-                            // Determine the tax rate based on supply source and customer state
-                            if (data.state_of_supply === customerState) {
-                                // Supply source state matches customer state, use GST tax rate
-                                taxRate = data.item_gst;
-                            } else {
-                                // Supply source state is different, use IGST tax rate
-                                taxRate = data.item_igst;
-                            }
-                        }
-            
+                        // Determine the tax rate based on supply source and customer state
+                        var taxRate = (data.supply_source === customerState) ? data.gst_tax : data.igst_tax;
                         taxInput.val(taxRate);
             
-                        // Trigger input events to recalculate amount
-                        hsnInput.trigger('input');
-                        priceInput.trigger('input');
-                        taxInput.trigger('input');
+                        // Manually recalculate amount based on the new values
+                        calculateAmountForRow(row);
                     },
                     error: function (error) {
                         console.log(error);
                     }
                 });
-            }
+            } 
             
+            function calculateAmountForRow(row) {
+                var quantity = row.find('.quantityInput').val() || 0;
+                var price = row.find('.priceInput').val() || 0;
+                var discount = row.find('.discountInput').val() || 0;
+                var tax = row.find('.taxInput').val() || 0;
             
-            function calculateAmount(input) {
-                var quantity = input.closest('tr').find('.quantityInput').val() || 0;
-                var price = input.closest('tr').find('.priceInput').val() || 0;
-                var discount = input.closest('tr').find('.discountInput').val() || 0;
-                var tax = input.closest('tr').find('.taxInput').val() || 0;
-        
                 // Calculate amount with tax and discount
                 var amount = (quantity * price) - discount;
                 if (tax > 0) {
                     amount += amount * (tax / 100);
                 }
-        
+            
                 // Update the amount input
-                input.closest('tr').find('.amountInput').val(amount.toFixed(2));
+                row.find('.amountInput').val(amount.toFixed(2));
             }
         </script>
+        {% comment %} --------------------------------------Modal------------------------------ {% endcomment %}
+            
+        <div class="modal col-md-10" style="margin-left: 220px;" id="myModal">
+            <form id="yourFormId" data-add-item-url="{% url 'add_item' %}">
+                {% csrf_token %}
         
+                <div class="modal-dialog modal-xl modal-dialog-centered">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Add New Item</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+        
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="d-block text-left mb-2">TYPE</label>
+                                    <div class="d-flex">
+                                        <select name="type" class="form-control" id="cname" placeholder="Select Type" required>
+                                            <option value="">Select Type</option>
+                                            <option value="Product" >Product</option>
+                                            <option value="Service">Service</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label class="d-block text-left">ITEM NAME</label>
+                                    <input type="text" name="name" class="form-control" placeholder="Item Name" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="d-block text-left">ITEM HSN</label>
+                                    <input type="number" name="hsn" class="form-control" placeholder="Item HSN"></input>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="d-block text-left">ITEM UNIT</label>
+                                    <select type="number" name="unit" class="form-control" placeholder="Item Unit" required>
+                                        <option value="">Select Unit</option>
+                                        <option value="Box" >Box</option>
+                                        <option value="Packet">Packet</option>
+                                        <option value="Bundle" >Bundle</option>
+                                        <option value="Pieces">Pieces</option>
+                                    </select>
+                                </div>
+                            </div><br><br>
+                        <!-- Section 1: Pricing -->
+                        <div class="pricing-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h3 style="text-align:center;">PRICING</h3><br>
+                                    <center>
+                                        <input type="radio" name="tax" value="nonTaxable" id="nonTaxableRadio">
+                                        <label for="nonTaxableRadio">Non Taxable</label>
+                                        <input type="radio" name="tax" value="taxable" id="taxableRadio">
+                                        <label for="taxableRadio">Taxable</label><br>
+                                    </center><br>
+        
+                                    <!-- Fields for Non Taxable -->
+                                    <div id="nonTaxableFields">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="bno">Sales Price</label>
+                                                <input type="number" name="sprice" class="form-control" id="bno" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="balance">Purchase Price</label>
+                                                <input type="number" name="pprice" class="form-control" id="balance" required>
+                                            </div>
+                                        </div><br>
+                                    </div>
+        
+                                    <!-- Fields for Taxable -->
+                                    <div id="taxableFields" style="display:none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="gst">GST</label>
+    
+                                                <select type="number" name="gst" class="form-control" id="gst" required>
+                                                    <option value="GST0[0%]">GST0[0%]</option>
+                                                    <option value="GST3[3%]" >GST3[3%]</option>
+                                                    <option value="GST5[5%]">GST5[5%]</option>
+                                                    <option value="GST12[12%]" >GST12[12%]</option>
+                                                    <option value="GST18[18%]">GST18[18%]</option>
+                                                    <option value="GST28[28%]">GST28[28%]</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="igst">IGST</label>
+                                                <select type="number" name="gst" class="form-control" id="gst" required>
+                                                    <option value="IGST0[0%]">IGST0[0%]</option>
+                                                    <option value="IGST3[3%]" >IGST3[3%]</option>
+                                                    <option value="IGST5[5%]">IGST5[5%]</option>
+                                                    <option value="IGST12[12%]" >IGST12[12%]</option>
+                                                    <option value="IGST18[18%]">IGST18[18%]</option>
+                                                    <option value="IGST28[28%]">IGST28[28%]</option>
+                                                </select>                                            </div>
+                                        </div><br>
+                                    
+                                        <!-- Sale Price and Purchase Price fields for Taxable -->
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="spriceTaxable">Sale Price</label>
+                                                <input type="number" name="spriceTaxable" class="form-control" id="spriceTaxable">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="d-block text-left" for="ppriceTaxable">Purchase Price</label>
+                                                <input type="number" name="ppriceTaxable" class="form-control" id="ppriceTaxable">
+                                            </div>
+                                        </div><br>
+                                        <!-- Additional fields for Taxable -->
+                                        <!-- ... -->
+                                    </div>
+                                </div>
+                            </div><br>
+                        </div>
+        <br><br>
+                        <!-- Section 2: Stocks -->
+                        <div class="stocks-section">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h3 style="text-align:center;">STOCKS</h3><br><br>
+                                    <div class="col-md-6">
+                                        <label class="d-block text-left" for="bno">STOCK IN HAND</label>
+                                        <input type="number" name="sth" class="form-control" id="stockInHand" placeholder="Opening Stock here" required>
+                                    </div>
+                                    <div id="extraPriceField" style="display: none;">
+                                        <div class="col-md-6" >
+                                            <label class="d-block text-left" for="extraPrice">At Price</label>
+                                            <input type="number" name="extraPrice" class="form-control" placeholder="At Price here">
+                                        </div>
+                                    </div><br>
 
+                                    <div class="col-md-6">
+                                        <label class="d-block text-left" for="balance">DATE</label>
+                                        <input type="date" name="date" class="form-control" id="balance" required>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                     
+                    </div>
+                </div>
+                        
+        
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="saveButton">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+      
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+
+      <script>
+        // Add an event listener to the radio buttons to toggle the visibility of fields
+        $(document).ready(function () {
+            // Add an event listener to the Save button
+            $("#saveButton").click(function () {
+                // Log the data to check if it's correct
+                console.log("Form data:", $("#yourFormId").serialize());
+        
+                // Store the dropdown element
+                var dropdown = $("#cname");
+        
+                // Perform an AJAX request to the server
+                $.ajax({
+                    type: "POST",
+                    url: $("#yourFormId").attr('action'),
+                    data: $("#yourFormId").serialize(),
+                    dataType: "json",
+                    success: function (data) {
+                        console.log('AJAX Response:', data);
+        
+                        if (data.success) {
+                            // Redirect to the purchasebill1.html page
+                            window.location.href = '/path/to/purchasebill1.html';
+                            
+                            // Update the dropdown with new items
+                            updateDropdown(data.items);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                    }
+                });
+            });
+        
+            // Function to update the dropdown with new items
+            function updateDropdown(items) {
+                var dropdown = $("#cname");
+        
+                // Clear existing options
+                dropdown.empty();
+        
+                // Add the default option
+                dropdown.append('<option value="">Select Type</option>');
+        
+                // Add new items to the dropdown
+                items.forEach(function (item) {
+                    dropdown.append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
+        });
+        
+        document.getElementById("nonTaxableRadio").addEventListener("change", function () {
+            document.getElementById("nonTaxableFields").style.display = "block";
+            document.getElementById("taxableFields").style.display = "none";
+        });
+    
+        document.getElementById("taxableRadio").addEventListener("change", function () {
+            document.getElementById("nonTaxableFields").style.display = "none";
+            document.getElementById("taxableFields").style.display = "block";
+        });
+    
+        document.getElementById("stockInHand").addEventListener("input", function () {
+            var stockInHandValue = parseInt(this.value, 10);
+    
+            // Show the extra field if the stock in hand value is 1 or above
+            if (stockInHandValue >= 1) {
+                document.getElementById("extraPriceField").style.display = "block";
+            } else {
+                document.getElementById("extraPriceField").style.display = "none";
+            }
+        });
+
+
+       
+
+    </script>
+    
 {% comment %} ----------------------------------------------------------------------------------------------- {% endcomment %}
        
 

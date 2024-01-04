@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 # Create your views here.
 
 def home(request):
@@ -414,6 +415,7 @@ def get_tax_rate(customer_state, item):
     # Otherwise, return the default tax rate
     return default_tax_rate
 
+
 def your_view_function(request):
     return render(request, 'purchasebill1.html')
 
@@ -439,3 +441,46 @@ def edit_item(request, item_id):
     else:
         item = get_object_or_404(ItemModel, id=item_id)
         return render(request, 'edit_item.html', {'item': item})
+      
+def add_item(request):
+    if request.method == 'POST':
+        try:
+            # Check authentication
+            if not request.user.is_authenticated:
+                return JsonResponse({'success': False, 'error': 'User not authenticated.'})
+            user = request.user
+
+            # Process form data and save the new item
+            item_name = request.POST.get('name')
+            item_sale_price = request.POST.get('sprice')
+
+            # Check for duplicate item names
+            if ItemModel.objects.filter(user=user, item_name=item_name).exists():
+                return JsonResponse({'success': False, 'error': 'Item with the same name already exists.'})
+
+            # Save the new item
+            new_item = ItemModel(
+                user=user,
+                item_name=item_name,
+                item_sale_price=item_sale_price,
+                # Add other fields as needed
+            )
+            new_item.full_clean()  # Optional: Validate fields using Django model's clean method
+            new_item.save()
+
+            # Fetch all items to dynamically update the dropdown
+            items = ItemModel.objects.filter(user=user)  # Assuming you want to filter by the user
+
+            # Return a JsonResponse with the updated items
+            item_options = [{'id': item.id, 'name': item.item_name} for item in items]
+            return JsonResponse({'success': True, 'items': item_options})
+
+        except ValidationError as e:
+            # Handle validation errors
+            return JsonResponse({'success': False, 'error': str(e)})
+
+        except Exception as e:
+            # Log or print the error for debugging
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return render(request, 'purchasebill1.html')
