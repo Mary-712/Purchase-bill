@@ -444,43 +444,49 @@ def edit_item(request, item_id):
       
 def add_item(request):
     if request.method == 'POST':
-        try:
-            # Check authentication
-            if not request.user.is_authenticated:
-                return JsonResponse({'success': False, 'error': 'User not authenticated.'})
-            user = request.user
+        # Process form data and create a new item
+        # Extract data from the request.POST dictionary
+        type = request.POST.get('type')
+        name = request.POST.get('name')
+        hsn = request.POST.get('hsn')
+        unit = request.POST.get('unit')
+        tax = request.POST.get('tax')
+        sprice = request.POST.get('sprice', 0)
+        pprice = request.POST.get('pprice', 0)
+        gst = request.POST.get('gst', 0)
+        igst = request.POST.get('igst', 0)
+        sth = request.POST.get('sth')
+        extraPrice = request.POST.get('extraPrice')
+        date = request.POST.get('date')
 
-            # Process form data and save the new item
-            item_name = request.POST.get('name')
-            item_sale_price = request.POST.get('sprice')
+        # Handle empty strings for numeric fields
+        sprice = 0 if not sprice else sprice
+        pprice = 0 if not pprice else pprice
+        gst = 0 if not gst else gst
+        igst = 0 if not igst else igst
 
-            # Check for duplicate item names
-            if ItemModel.objects.filter(user=user, item_name=item_name).exists():
-                return JsonResponse({'success': False, 'error': 'Item with the same name already exists.'})
+        # Create a new ItemModel instance
+        new_item = ItemModel.objects.create(
+            item_name=name,
+            item_hsn=hsn,
+            item_unit=unit,
+            item_taxable=tax,
+            item_gst=gst,
+            item_igst=igst,
+            item_sale_price=sprice,
+            item_purchase_price=pprice,
+            item_stock_in_hand=sth,
+            item_at_price=extraPrice,
+            item_date=date,
+            type=type
+        )
 
-            # Save the new item
-            new_item = ItemModel(
-                user=user,
-                item_name=item_name,
-                item_sale_price=item_sale_price,
-                # Add other fields as needed
-            )
-            new_item.full_clean()  # Optional: Validate fields using Django model's clean method
-            new_item.save()
+        # Get all items to update the dropdown
+        items = ItemModel.objects.values('id', 'item_name')
 
-            # Fetch all items to dynamically update the dropdown
-            items = ItemModel.objects.filter(user=user)  # Assuming you want to filter by the user
+        # Return the newly created item and the updated dropdown
+        return JsonResponse({'success': True, 'new_item': {'id': new_item.id, 'name': new_item.item_name}, 'items': list(items)})
+    
+    return render(request, 'purchasebill1.html.html')
 
-            # Return a JsonResponse with the updated items
-            item_options = [{'id': item.id, 'name': item.item_name} for item in items]
-            return JsonResponse({'success': True, 'items': item_options})
 
-        except ValidationError as e:
-            # Handle validation errors
-            return JsonResponse({'success': False, 'error': str(e)})
-
-        except Exception as e:
-            # Log or print the error for debugging
-            return JsonResponse({'success': False, 'error': str(e)})
-
-    return render(request, 'purchasebill1.html')

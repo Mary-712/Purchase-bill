@@ -50,6 +50,7 @@ class ItemModel(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     company = models.ForeignKey(company,on_delete= models.CASCADE,null=True,blank=True)
     staff = models.ForeignKey(staff_details,on_delete= models.CASCADE,null=True,blank=True)
+    type=models.CharField(max_length=255)
     item_name = models.CharField(max_length=255)
     item_hsn = models.PositiveIntegerField(null=True)
     item_unit = models.CharField(max_length=255)
@@ -61,6 +62,7 @@ class ItemModel(models.Model):
     item_stock_in_hand = models.PositiveBigIntegerField(default=0)
     item_at_price = models.PositiveBigIntegerField(default=0)
     item_date = models.DateField()
+    
 
 class FirstBill(models.Model):
     customer = models.ForeignKey(Parties,on_delete=models.CASCADE,null=True,blank=True)

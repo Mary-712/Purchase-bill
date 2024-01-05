@@ -557,7 +557,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="d-block text-left" for="igst">IGST</label>
-                                                <select type="number" name="gst" class="form-control" id="gst" required>
+                                                <select type="number" name="igst" class="form-control" id="igst" required>
                                                     <option value="IGST0[0%]">IGST0[0%]</option>
                                                     <option value="IGST3[3%]" >IGST3[3%]</option>
                                                     <option value="IGST5[5%]">IGST5[5%]</option>
@@ -566,20 +566,18 @@
                                                     <option value="IGST28[28%]">IGST28[28%]</option>
                                                 </select>                                            </div>
                                         </div><br>
-                                    
+                                  
                                         <!-- Sale Price and Purchase Price fields for Taxable -->
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <label class="d-block text-left" for="spriceTaxable">Sale Price</label>
-                                                <input type="number" name="spriceTaxable" class="form-control" id="spriceTaxable">
+                                                <label class="d-block text-left" for="sprice">Sale Price</label>
+                                                <input type="number" name="sprice" class="form-control" id="spriceTaxable">
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="d-block text-left" for="ppriceTaxable">Purchase Price</label>
-                                                <input type="number" name="ppriceTaxable" class="form-control" id="ppriceTaxable">
+                                                <label class="d-block text-left" for="pprice">Purchase Price</label>
+                                                <input type="number" name="pprice" class="form-control" id="ppriceTaxable">
                                             </div>
-                                        </div><br>
-                                        <!-- Additional fields for Taxable -->
-                                        <!-- ... -->
+                                        </div><br> 
                                     </div>
                                 </div>
                             </div><br>
@@ -628,84 +626,122 @@
       
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
-
-      <script>
-        // Add an event listener to the radio buttons to toggle the visibility of fields
+    <script>
         $(document).ready(function () {
-            // Add an event listener to the Save button
-            $("#saveButton").click(function () {
-                // Log the data to check if it's correct
-                console.log("Form data:", $("#yourFormId").serialize());
-        
-                // Store the dropdown element
-                var dropdown = $("#cname");
-        
-                // Perform an AJAX request to the server
+            // Your existing JavaScript code
+    
+            // Handle the change event for the TYPE dropdown
+            $('#cname').on('change', function () {
+                var type = $(this).val();
+                // Show/hide relevant fields based on the selected type
+                if (type === 'Product') {
+                    // Show fields specific to Products
+                    $('#taxableFields').show();
+                    $('#nonTaxableFields').hide();
+                } else if (type === 'Service') {
+                    // Show fields specific to Services
+                    $('#taxableFields').hide();
+                    $('#nonTaxableFields').show();
+                }
+            });
+    
+            // Handle the change event for the TAX radio buttons
+            $('input[name="tax"]').on('change', function () {
+                var taxType = $(this).val();
+                // Show/hide relevant fields based on the selected tax type
+                if (taxType === 'taxable') {
+                    // Show fields specific to Taxable items
+                    $('#gstFields').show();
+                    $('#igstFields').show();
+                    $('#spriceTaxable').prop('required', true);
+                    $('#ppriceTaxable').prop('required', true);
+                } else if (taxType === 'nonTaxable') {
+                    // Show fields specific to Non Taxable items
+                    $('#gstFields').hide();
+                    $('#igstFields').hide();
+                    $('#spriceTaxable').prop('required', false);
+                    $('#ppriceTaxable').prop('required', false);
+                }
+            });
+    
+            // Handle the form submission
+            $('#saveButton').on('click', function () {
                 $.ajax({
-                    type: "POST",
-                    url: $("#yourFormId").attr('action'),
-                    data: $("#yourFormId").serialize(),
-                    dataType: "json",
-                    success: function (data) {
-                        console.log('AJAX Response:', data);
-        
-                        if (data.success) {
-                            // Redirect to the purchasebill1.html page
-                            window.location.href = '/path/to/purchasebill1.html';
-                            
-                            // Update the dropdown with new items
-                            updateDropdown(data.items);
+                    type: 'POST',
+                    url: '{% url "add_item" %}',  // Replace with the correct URL for your view
+                    data: $('#yourFormId').serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Update the dropdown with the newly created item
+                            $('#yourDropdownId').append($('<option>', {
+                                value: response.new_item.id,
+                                text: response.new_item.name
+                            }));
+    
+                            // Optionally, select the newly added item in the dropdown
+                            $('#yourDropdownId').val(response.new_item.id);
+    
+                            // Close the modal or perform any other necessary actions
+                            $('#myModal').modal('hide');
                         }
                     },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
+                    error: function (error) {
+                        console.log(error);
                     }
                 });
             });
-        
-            // Function to update the dropdown with new items
-            function updateDropdown(items) {
-                var dropdown = $("#cname");
-        
-                // Clear existing options
-                dropdown.empty();
-        
-                // Add the default option
-                dropdown.append('<option value="">Select Type</option>');
-        
-                // Add new items to the dropdown
-                items.forEach(function (item) {
-                    dropdown.append('<option value="' + item.id + '">' + item.name + '</option>');
-                });
-            }
-        });
-        
-        document.getElementById("nonTaxableRadio").addEventListener("change", function () {
-            document.getElementById("nonTaxableFields").style.display = "block";
-            document.getElementById("taxableFields").style.display = "none";
+    
+            // Your existing JavaScript code
         });
     
-        document.getElementById("taxableRadio").addEventListener("change", function () {
-            document.getElementById("nonTaxableFields").style.display = "none";
-            document.getElementById("taxableFields").style.display = "block";
+        // Function to update the dropdown with new items
+        function updateDropdown(items) {
+            var dropdown = $("#cname");
+            dropdown.empty();
+            dropdown.append('<option value="">Select Type</option>');
+            items.forEach(function (item) {
+                dropdown.append('<option value="' + item.id + '">' + item.name + '</option>');
+            });
+        }
+    
+        // Add event listeners for radio buttons and stock input
+        $("#nonTaxableRadio").change(function () {
+            $("#nonTaxableFields").show();
+            $("#taxableFields").hide();
         });
     
-        document.getElementById("stockInHand").addEventListener("input", function () {
-            var stockInHandValue = parseInt(this.value, 10);
+        $("#taxableRadio").change(function () {
+            $("#nonTaxableFields").hide();
+            $("#taxableFields").show();
+        });
     
-            // Show the extra field if the stock in hand value is 1 or above
+        $("#stockInHand").on("input", function () {
+            var stockInHandValue = parseInt($(this).val(), 10);
             if (stockInHandValue >= 1) {
-                document.getElementById("extraPriceField").style.display = "block";
+                $("#extraPriceField").show();
             } else {
-                document.getElementById("extraPriceField").style.display = "none";
+                $("#extraPriceField").hide();
             }
         });
-
-
-       
-
+        $('input[name="tax"]').on('change', function() {
+    var taxType = $(this).val();
+    // Show/hide relevant fields based on the selected tax type
+    if (taxType === 'taxable') {
+        // Show fields specific to Taxable items
+        $('#gstFields').show();
+        $('#igstFields').show();
+        $('#spriceTaxable').prop('required', true);
+        $('#ppriceTaxable').prop('required', true);
+    } else if (taxType === 'nonTaxable') {
+        // Show fields specific to Non Taxable items
+        $('#gstFields').hide();
+        $('#igstFields').hide();
+        $('#spriceTaxable').prop('required', false);
+        $('#ppriceTaxable').prop('required', false);
+    }
+});
     </script>
+    
     
 {% comment %} ----------------------------------------------------------------------------------------------- {% endcomment %}
        
